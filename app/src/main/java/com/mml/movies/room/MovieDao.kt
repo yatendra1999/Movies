@@ -23,7 +23,7 @@ interface MovieDao {
     fun fetchSingleStat(id: Int): Single<Stats>
 
     @Query("SELECT * FROM Movies WHERE title LIKE :name")
-    fun fetchByName(name: String) : Single<List<Movies>>
+    fun fetchByName(name: String) : Observable<List<Movies>>
 
     @Query("SELECT Movies.* FROM Movies INNER JOIN Stats ON Movies.id = Stats.id WHERE bookmarked = 1")
     fun getBookmarked(): Observable<List<Movies>>

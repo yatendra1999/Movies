@@ -24,12 +24,13 @@ class ActiveVM @Inject constructor(
     val repo: ActiveRepo
 ) : ViewModel() {
     var active = repo.getActive()
+    var locale: String? = null
 
     init {
         updateData()
     }
 
     fun updateData() {
-        repo.updateData()
+        repo.updateData(locale = locale)
     }
 }

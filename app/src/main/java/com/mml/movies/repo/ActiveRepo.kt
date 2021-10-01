@@ -18,21 +18,26 @@ class ActiveRepo @Inject constructor(
     var apiService: ApiService
 ) {
 
-    var lastUpdate: Long = 0
-
     fun getActive(): Observable<List<Movies>> {
         return movieDao.getActive()
     }
 
-    fun updateData(page: Int = 1, max: Int = 1){
-        if(System.currentTimeMillis() <= lastUpdate + 3600000 || page>max){
+    fun updateData(page: Int = 1, max: Int = 1, locale: String?){
+        if(page>max){
             return
         }
         apiService.getNowPlaying(
-            mapOf<String, String>(
-                "api_key" to Constants.api_key,
-                "page" to page.toString()
-            )
+            if(locale == null)
+                mapOf(
+                    "api_key" to Constants.api_key,
+                    "page" to page.toString()
+                )
+                else
+                mapOf(
+                    "api_key" to Constants.api_key,
+                    "page" to page.toString(),
+                    "region" to locale
+                )
         ).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
@@ -41,10 +46,7 @@ class ActiveRepo @Inject constructor(
                     updateStats(it.results)
                     Log.d("NetworkInterface", "updateFromAPI: Fetched $page/${it.totalPages} Now Playing pages")
                     if(page<it.totalPages){
-                        updateData(page+1, it.totalPages)
-                    }
-                    else{
-                        lastUpdate = System.currentTimeMillis()
+                        updateData(page+1, it.totalPages, locale)
                     }
                 },
                 {

@@ -37,7 +37,13 @@ import com.mml.movies.network.Constants
 import com.mml.movies.network.models.Movies
 import com.mml.movies.viewmodels.ActiveVM
 import com.mml.movies.viewmodels.MoviesVM
+import com.mml.movies.viewmodels.SearchVM
 import com.mml.movies.viewmodels.TrendingVM
+import java.util.*
+import android.os.Build
+
+
+
 
 @Composable
 fun MovieActions(
@@ -232,6 +238,14 @@ fun ActiveMovies(
     activeVMViewModel: ActiveVM = hiltViewModel()
 ){
     var movies = activeVMViewModel.active.subscribeAsState(initial = listOf<Movies>())
+    val locale: String
+    val context = LocalContext.current
+    locale = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        context.resources.configuration.locales.get(0).country
+    } else {
+        context.resources.configuration.locale.country
+    }
+    activeVMViewModel.locale = locale
     LazyColumn(
         modifier = Modifier.fillMaxWidth()
     ){
@@ -273,17 +287,36 @@ fun BookmarkedMovies(
     }
 }
 
+@ExperimentalMaterialApi
 @Composable
-fun SearchMovies(navController: NavController) {
-    Text("Search goes here")
+fun SearchMovies(
+    navController: NavController,
+    searchVM: SearchVM = hiltViewModel()
+) {
+    var results = searchVM.searchResults.subscribeAsState(initial = listOf<Movies>())
+    Column {
+        OutlinedTextField(
+            value = searchVM.searchString.value,
+            onValueChange = {searchVM.searchString.value = it; searchVM.search()},
+            label = { Text("Search") },
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth()
+        ){
+            items(results.value){
+                    movie -> MovieBox(navController, movie)
+            }
+        }
+    }
 }
 
 
 sealed class Screen(val route: String, val desc: String, val icon: ImageVector) {
-    object Trending : Screen("trending", "Currently Trending", Icons.Filled.TrendingUp)
-    object Search : Screen("search", "Search Movies", Icons.Filled.Search)
-    object Active : Screen("active", "Now Playing", Icons.Filled.Movie)
-    object Bookmark : Screen("bookmarks", "Bookmarked", Icons.Filled.Bookmark)
+    object Trending : Screen("Trending", "Currently Trending", Icons.Filled.TrendingUp)
+    object Search : Screen("Search", "Search Movies", Icons.Filled.Search)
+    object Active : Screen("Active", "Now Playing", Icons.Filled.Movie)
+    object Bookmark : Screen("Bookmarks", "Bookmarked", Icons.Filled.Bookmark)
 }
 
 @ExperimentalMaterialApi
@@ -315,6 +348,7 @@ fun Home(){
                 items.forEach { screen ->
                     BottomNavigationItem(
                         icon = { Icon(screen.icon, contentDescription = null) },
+                        label = {Text(screen.route)},
                         selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                         onClick = {
                             navController.navigate(screen.route) {
