@@ -2,16 +2,24 @@ package com.mml.movies.network.models
 
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import androidx.annotation.Keep
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
-@Keep
-data class Movie(
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Entity
+data class Movies(
     @JsonProperty("adult")
     val adult: Boolean,
     @JsonProperty("backdrop_path")
     val backdropPath: String?,
-    @JsonProperty("genre_ids")
-    val genreIds: List<Int>,
+
+//    @Ignore
+//    @JsonProperty("genre_ids")
+//    val genreIds: List<Int>,
+
+    @PrimaryKey
     @JsonProperty("id")
     val id: Int,
     @JsonProperty("original_language")
@@ -25,7 +33,7 @@ data class Movie(
     @JsonProperty("poster_path")
     val posterPath: String?,
     @JsonProperty("release_date")
-    val releaseDate: String,
+    val releaseDate: String?,
     @JsonProperty("title")
     val title: String,
     @JsonProperty("video")
