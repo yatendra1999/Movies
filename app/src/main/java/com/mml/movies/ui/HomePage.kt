@@ -35,14 +35,12 @@ import coil.compose.rememberImagePainter
 import coil.size.Scale
 import com.mml.movies.network.Constants
 import com.mml.movies.network.models.Movies
-import com.mml.movies.viewmodels.ActiveVM
 import com.mml.movies.viewmodels.MoviesVM
 import com.mml.movies.viewmodels.SearchVM
 import com.mml.movies.viewmodels.TrendingVM
 import java.util.*
 import android.os.Build
-
-
+import com.mml.movies.viewmodels.ActiveVM
 
 
 @Composable
@@ -294,10 +292,13 @@ fun SearchMovies(
     searchVM: SearchVM = hiltViewModel()
 ) {
     var results = searchVM.searchResults.subscribeAsState(initial = listOf<Movies>())
+    var searchString by remember {
+        mutableStateOf(searchVM.searchString)
+    }
     Column {
         OutlinedTextField(
-            value = searchVM.searchString.value,
-            onValueChange = {searchVM.searchString.value = it; searchVM.search()},
+            value = searchString,
+            onValueChange = { searchVM.searchString = it; searchString = it; searchVM.search(searchString)},
             label = { Text("Search") },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
@@ -315,7 +316,7 @@ fun SearchMovies(
 sealed class Screen(val route: String, val desc: String, val icon: ImageVector) {
     object Trending : Screen("Trending", "Currently Trending", Icons.Filled.TrendingUp)
     object Search : Screen("Search", "Search Movies", Icons.Filled.Search)
-    object Active : Screen("Active", "Now Playing", Icons.Filled.Movie)
+    object Active : Screen("Playing", "Now Playing", Icons.Filled.Movie)
     object Bookmark : Screen("Bookmarks", "Bookmarked", Icons.Filled.Bookmark)
 }
 
